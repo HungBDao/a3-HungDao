@@ -1,14 +1,20 @@
 {
-  "name": "",
-  "version": "",
-  "description": "",
-  "author": "",
+  "name": "a3-hung-dao",
+  "version": "1.0.0",
+  "description": "CS4241 Assignment 3 - Task Deadline Tracker",
+  "author": "Hung Dao",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
     "mime": "^2.6.0",
-    "mongodb": "^7.6.0"
+    "mongodb": "^7.6.0",
+    "morgan": "^1.12.1"
   },
   "engines": {
     "node": "24.x"
