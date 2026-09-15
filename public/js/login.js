@@ -1,8 +1,16 @@
-const submitLogin = async function( event ) {
+// FRONT-END (CLIENT) JAVASCRIPT — login page
+
+const el = ( selector ) => document.querySelector( selector )
+
+const handleLogin = async function( event ) {
   event.preventDefault()
 
-  const username = document.querySelector( '#username' ).value.trim()
-  const password = document.querySelector( '#password' ).value
+  const username = el( '#username' ).value.trim()
+  const password = el( '#password' ).value
+  const errorBox = el( '#login-error' )
+
+  errorBox.classList.add( 'd-none' )
+  errorBox.textContent = ''
 
   const response = await fetch( '/login', {
     method: 'POST',
@@ -13,17 +21,18 @@ const submitLogin = async function( event ) {
   const data = await response.json()
 
   if( !response.ok ) {
-    document.querySelector( '#login-error' ).textContent = data.error
+    errorBox.textContent = data.error || 'Something went wrong. Try again.'
+    errorBox.classList.remove( 'd-none' )
     return
   }
 
   if( data.created ) {
-    alert( `New account created for "${ username }"` )
+    alert( `Welcome! We didn't find an existing account for "${ username }", so we created a new one for you.` )
   }
 
   window.location.href = '/app'
 }
 
 window.onload = function() {
-  document.querySelector( '#login-form' ).addEventListener( 'submit', submitLogin )
+  el( '#login-form' ).addEventListener( 'submit', handleLogin )
 }

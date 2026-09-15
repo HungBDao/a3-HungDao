@@ -1,35 +1,39 @@
-// FRONT-END (CLIENT) JAVASCRIPT HERE
+// FRONT-END (CLIENT) JAVASCRIPT — main app page
 
 let editingId = null // tracks whether the form is in "add" or "edit" mode
 
-const elm = ( selector ) => document.querySelector( selector )
-
-// Rendering
+const el = ( selector ) => document.querySelector( selector )
 
 const renderRows = function( data ) {
-  const body = elm( '#results-body' )
-  const emptyMessage = elm( '#no-tasks-msg' )
+  const body = el( '#results-body' )
+  const emptyMessage = el( '#empty-message' )
 
   body.innerHTML = ''
 
   if( data.length === 0 ) {
-    emptyMessage.classList.remove( 'hidden' )
+    emptyMessage.classList.remove( 'd-none' )
     return
   }
-  emptyMessage.classList.add( 'hidden' )
+  emptyMessage.classList.add( 'd-none' )
 
   data.forEach( function( row ) {
     const tr = document.createElement( 'tr' )
     tr.dataset.id = row.id
 
+    const badgeClass = {
+      high: 'text-bg-danger',
+      medium: 'text-bg-warning',
+      low: 'text-bg-success'
+    }[ row.priority ] || 'text-bg-secondary'
+
     tr.innerHTML = `
       <td>${ escapeHTML( row.task ) }</td>
-      <td><span class="priority-badge priority-${ row.priority }">${ row.priority }</span></td>
+      <td><span class="badge ${ badgeClass } text-capitalize">${ row.priority }</span></td>
       <td>${ row.created }</td>
       <td>${ row.deadline }</td>
-      <td class="row-actions">
-        <button type="button" class="edit-btn" data-id="${ row.id }">Edit</button>
-        <button type="button" class="delete-btn" data-id="${ row.id }">Delete</button>
+      <td class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary edit-btn" data-id="${ row.id }">Edit</button>
+        <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-id="${ row.id }">Delete</button>
       </td>
     `
     body.appendChild( tr )
@@ -42,47 +46,67 @@ const escapeHTML = function( str ) {
   return div.innerHTML
 }
 
-// Data fetching 
-
 const loadData = async function() {
   const response = await fetch( '/data' )
-  if (response.status === 401) {
-    alert('You are not logged in. Please log in to access your tasks.')
+
+  if( response.status === 401 ) {
     window.location.href = '/'
-    return
+    return []
   }
+
   const data = await response.json()
   renderRows( data )
   return data
 }
 
-// Form handling 
+const loadWhoAmI = async function() {
+  const response = await fetch( '/whoami' )
+  const data = await response.json()
+
+  if( !data.username ) {
+    window.location.href = '/'
+    return
+  }
+
+  el( '#current-username' ).textContent = data.username
+}
+
+const getSelectedPriority = function() {
+  const checked = document.querySelector( 'input[name="priority"]:checked' )
+  return checked ? checked.value : 'medium'
+}
+
+const setSelectedPriority = function( value ) {
+  const target = document.querySelector( `input[name="priority"][value="${ value }"]` )
+  if( target ) target.checked = true
+}
 
 const resetForm = function() {
   editingId = null
-  elm( '#task-form' ).reset()
-  elm( '#created' ).valueAsDate = new Date()
-  elm( '#submit-btn' ).textContent = 'Add Task'
-  elm( '#cancel-edit-btn' ).classList.add( 'hidden' )
+  el( '#task-form' ).reset()
+  el( '#created' ).valueAsDate = new Date()
+  setSelectedPriority( 'medium' )
+  el( '#submit-btn' ).textContent = 'Add Task'
+  el( '#cancel-edit-btn' ).classList.add( 'd-none' )
 }
 
-const startEdit = function( row, target ) {
-  editingId = target.dataset.id
-  elm( '#task' ).value = row.task
-  elm( '#priority' ).value = row.priority
-  elm( '#created' ).value = row.created
-  elm( '#submit-btn' ).textContent = 'Save Changes'
-  elm( '#cancel-edit-btn' ).classList.remove( 'hidden' )
-  elm( '#task' ).focus()
+const startEdit = function( row ) {
+  editingId = row.id
+  el( '#task' ).value = row.task
+  setSelectedPriority( row.priority )
+  el( '#created' ).value = row.created
+  el( '#submit-btn' ).textContent = 'Save Changes'
+  el( '#cancel-edit-btn' ).classList.remove( 'd-none' )
+  el( '#task' ).focus()
 }
 
 const handleSubmit = async function( event ) {
   event.preventDefault()
 
   const json = {
-    task: elm( '#task' ).value,
-    priority: elm( '#priority' ).value,
-    created: elm( '#created' ).value
+    task: el( '#task' ).value,
+    priority: getSelectedPriority(),
+    created: el( '#created' ).value
   }
 
   let response
@@ -101,8 +125,7 @@ const handleSubmit = async function( event ) {
     })
   }
 
-  if (response.status === 401) {
-    alert('You are not logged in. Please log in to add or edit tasks.')
+  if( response.status === 401 ) {
     window.location.href = '/'
     return
   }
@@ -123,11 +146,12 @@ const handleTableClick = async function( event ) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     })
-    if (response.status === 401) {
-      alert('You are not logged in. Please log in to delete tasks.')
+
+    if( response.status === 401 ) {
       window.location.href = '/'
       return
     }
+
     const data = await response.json()
     renderRows( data )
     if( editingId === id ) resetForm()
@@ -136,7 +160,7 @@ const handleTableClick = async function( event ) {
   if( target.classList.contains( 'edit-btn' ) ) {
     const data = await loadData()
     const row = data.find( r => r.id === id )
-    if( row ) startEdit( row, target )
+    if( row ) startEdit( row )
   }
 }
 
@@ -146,10 +170,11 @@ const handleLogout = async function() {
 }
 
 window.onload = function() {
-  elm( '#created' ).valueAsDate = new Date()
-  elm( '#task-form' ).addEventListener( 'submit', handleSubmit )
-  elm( '#results-body' ).addEventListener( 'click', handleTableClick )
-  elm( '#cancel-edit-btn' ).addEventListener( 'click', resetForm )
-  elm( '#logout-btn' ).addEventListener( 'click', handleLogout )
+  el( '#created' ).valueAsDate = new Date()
+  el( '#task-form' ).addEventListener( 'submit', handleSubmit )
+  el( '#results-body' ).addEventListener( 'click', handleTableClick )
+  el( '#cancel-edit-btn' ).addEventListener( 'click', resetForm )
+  el( '#logout-btn' ).addEventListener( 'click', handleLogout )
+  loadWhoAmI()
   loadData()
 }

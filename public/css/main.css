@@ -1,153 +1,40 @@
-* { /* Reset default browser styles */
-  box-sizing: border-box;
-}
+/* Small custom touches on top of Bootstrap -- kept intentionally light so
+   Bootstrap does the bulk of the styling work, per the assignment spec. */
 
 body {
-  margin: 0;
   font-family: 'Inter', Arial, sans-serif;
   background-color: #f4f6f8;
-  color: #1f2933;
-  line-height: 1.5;
 }
 
-h1, h2 {
-  font-family: 'Inter', Arial, sans-serif;
-  font-weight: 700;
-  margin: 0 0 0.25em;
+/* ---------- Login page ---------- */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
 }
 
-table {
+.login-card {
   width: 100%;
-  border-collapse: collapse;
+  max-width: 380px;
+  padding: 2rem;
+  border: none;
 }
 
-th, td {
-  text-align: left;
-  padding: 0.6em 0.75em;
+/* ---------- App page ---------- */
+.app-header {
+  background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
 }
 
-button {
-  font-family: 'Inter', Arial, sans-serif;
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
-  padding: 0.6em 1.2em;
-  font-weight: 600;
-}
-
-footer {
-  text-align: center;
-  padding: 1.5em;
-  color: #7b8794;
-  font-size: 0.9em;
-}
-
-/* Id selectors */
-#page-header {
-  background-color: #0037ffcc;
-  color: #ffffff;
-  padding: 2em 1.5em;
-  text-align: center;
-}
-
-#page-header .subtitle {
-  color: #cbd2d9;
-  margin: 0;
-}
-
-#task-form {
+.app-layout {
   display: flex;
   flex-direction: column;
-  gap: 0.4em;
+  gap: 1.5rem;
+  max-width: 720px;
 }
 
-#submit-btn {
-  background-color: #2563eb;
-  color: #ffffff;
-  margin-top: 0.5em;
-}
-
-#submit-btn:hover {
-  background-color: #1d4ed8;
-}
-
-#results-table {
-  margin-top: 0.75em;
-}
-
-#no-tasks-msg {
-  color: #7b8794;
-  font-style: italic;
-}
-
-/* Class selectors */
-.layout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5em;
-  max-width: 960px;
-  margin: 2em auto;
-  padding: 0 1.5em;
-}
-
-.card {
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  padding: 1.5em;
-  flex: 1 1 320px;
-}
-
-.secondary {
-  background-color: #e2e8f0;
-  color: #1f2933;
-}
-
-.hidden {
-  display: none;
-}
-
-.priority-badge {
-  display: inline-block;
-  padding: 0.15em 0.6em;
-  border-radius: 999px;
-  font-size: 0.85em;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.priority-high {
-  background-color: #fde2e2;
-  color: #c53030;
-}
-
-.priority-medium {
-  background-color: #fef3c7;
-  color: #b45309;
-}
-
-.priority-low {
-  background-color: #d1fae5;
-  color: #047857;
-}
-
-.row-actions {
-  display: flex;
-  gap: 0.4em;
-}
-
-.edit-btn {
-  background-color: #e2e8f0;
-  color: #1f2933;
-}
-
-.delete-btn {
-  background-color: #fde2e2;
-  color: #c53030;
-}
-
-.secondary {
-  background-color: #e2e8f0;
-  color: #1f2933;
+#results-section .card-body {
+  padding-bottom: 1rem;
 }

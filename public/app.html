@@ -4,66 +4,91 @@
     <title>Task Deadline Tracker</title>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <meta name='description' content='Track your tasks and let the server compute deadlines for you.' />
+
     <link rel='preconnect' href='https://fonts.googleapis.com' />
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap' rel='stylesheet' />
-    <script src='js/main.js'></script>
+
+    <!-- CSS framework: Bootstrap 5 -->
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'>
     <link rel='stylesheet' href='css/main.css' />
-    
-    <!-- get rid of favicon error -->
+
     <link rel='icon' href='data:;base64,iVBORw0KGgo=' />
   </head>
-  
   <body>
-    <header id='page-header'>
-      <h1>Task Deadline Tracker</h1>
-      <p class='subtitle'>Add a task and a priority, and the server figures out your deadline for you.</p>
-      <button id='logout-btn' class='secondary'>Log Out</button>
+    <header class='app-header'>
+      <div class='container d-flex justify-content-between align-items-center flex-wrap gap-2 py-3'>
+        <div>
+          <h1 class='h4 mb-0'>Task Deadline Tracker</h1>
+          <p class='text-muted small mb-0'>Signed in as <strong id='current-username'>...</strong></p>
+        </div>
+        <button type='button' id='logout-btn' class='btn btn-outline-secondary btn-sm'>Log Out</button>
+      </div>
     </header>
 
-    <main class='layout'>
-      <section id='entry-section' class='card'>
-        <h2>Enter a task</h2>
-        <form id='task-form'>
-          <label for='task'>Task</label>
-          <input type='text' id='task' name='task' placeholder='e.g. Finish reading assignment' required />
+    <main class='container app-layout py-4'>
+      <section id='entry-section' class='card shadow-sm'>
+        <div class='card-body'>
+          <h2 class='h5'>Add a Task</h2>
+          <form id='task-form'>
+            <div class='mb-3'>
+              <label for='task' class='form-label'>Task</label>
+              <textarea class='form-control' id='task' name='task' rows='2' placeholder='e.g. Finish reading assignment' required></textarea>
+            </div>
 
-          <label for='priority'>Priority</label>
-          <select id='priority' name='priority'>
-            <option value='low'>Low</option>
-            <option value='medium' selected>Medium</option>
-            <option value='high'>High</option>
-          </select>
+            <div class='mb-3'>
+              <label class='form-label d-block'>Priority</label>
+              <div class='btn-group' role='group' aria-label='Priority'>
+                <input type='radio' class='btn-check' name='priority' id='priority-low' value='low' autocomplete='off'>
+                <label class='btn btn-outline-success' for='priority-low'>Low</label>
 
-          <label for='created'>Created Date</label>
-          <input type='date' id='created' name='created' required />
+                <input type='radio' class='btn-check' name='priority' id='priority-medium' value='medium' autocomplete='off' checked>
+                <label class='btn btn-outline-warning' for='priority-medium'>Medium</label>
 
-          <button type='submit' id='submit-btn'>Add Task</button>
-          <button type='button' id='cancel-edit-btn' class='secondary hidden'>Cancel Edit</button>
-        </form>
+                <input type='radio' class='btn-check' name='priority' id='priority-high' value='high' autocomplete='off'>
+                <label class='btn btn-outline-danger' for='priority-high'>High</label>
+              </div>
+            </div>
+
+            <div class='mb-3'>
+              <label for='created' class='form-label'>Created Date</label>
+              <input type='date' class='form-control' id='created' name='created' required />
+            </div>
+
+            <button type='submit' id='submit-btn' class='btn btn-primary'>Add Task</button>
+            <button type='button' id='cancel-edit-btn' class='btn btn-secondary d-none'>Cancel Edit</button>
+          </form>
+        </div>
       </section>
 
-      <section id='results-section' class='card'>
-        <h2>Task List</h2>
-        <table id='results-table'>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Priority</th>
-              <th>Created</th>
-              <th>Deadline</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id='results-body'>
-            <!-- populated by main.js -->
-          </tbody>
-        </table>
-        <p id='no-tasks-msg' class='hidden'>No tasks yet. Add one above!</p>
+      <section id='results-section' class='card shadow-sm'>
+        <div class='card-body'>
+          <h2 class='h5'>Your Tasks</h2>
+          <div class='table-responsive'>
+            <table id='results-table' class='table table-hover align-middle'>
+              <thead>
+                <tr>
+                  <th scope='col'>Task</th>
+                  <th scope='col'>Priority</th>
+                  <th scope='col'>Created</th>
+                  <th scope='col'>Deadline</th>
+                  <th scope='col'>Actions</th>
+                </tr>
+              </thead>
+              <tbody id='results-body'>
+                <!-- populated by main.js -->
+              </tbody>
+            </table>
+          </div>
+          <p id='empty-message' class='text-muted fst-italic d-none'>No tasks yet — add one above!</p>
+        </div>
       </section>
     </main>
-    
-    <footer>
+
+    <footer class='text-center text-muted small py-4'>
       <p>CS4241 Assignment 3. Hung Dao</p>
     </footer>
+
+    <script src='js/main.js' defer></script>
   </body>
 </html>

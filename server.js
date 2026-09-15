@@ -113,7 +113,6 @@ const main = async function() {
     })
   })
 
-  //Debug 
   app.get( '/whoami', function( req, res ) {
     res.json({ username: ( req.session && req.session.username ) || null })
   })
