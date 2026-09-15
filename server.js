@@ -66,6 +66,11 @@ const main = async function() {
   const tasks = db.collection('tasks')
   const users = db.collection('users')
 
+  const requireAuth = function( req, res, next ) {
+    if( req.session && req.session.username ) return next()
+    res.status( 401 ).json({ error: 'Not logged in' })
+  }
+
   app.get( '/', function( req, res ) {
     if( req.session && req.session.username ) return res.redirect( '/app' )
     res.sendFile( path.join( __dirname, 'public', 'index.html' ) )
@@ -76,8 +81,8 @@ const main = async function() {
     res.sendFile( path.join( __dirname, 'public', 'app.html' ) )
   })
 
-  app.get('/data', async function (req, res) {
-    const rows = await tasks.find({}).toArray()
+  app.get('/data', requireAuth, async function (req, res) {
+    const rows = await tasks.find({username: req.session.username}).toArray()
     res.json(rows.map(addDerivedFields))
   })
 
@@ -112,39 +117,41 @@ const main = async function() {
     res.json({ ok: true, created: false })
   })
 
-  app.post('/data', async function (req, res) {
+  app.post('/data', requireAuth, async function (req, res) {
     const task = String( req.body.task || '' ).trim()
     const priority = [ 'low', 'medium', 'high' ].includes( req.body.priority ) ? req.body.priority : 'medium'
     const created = req.body.created || new Date().toISOString().slice( 0, 10 )
 
     if( task.length > 0 ) {
-      await tasks.insertOne({ task, priority, created })
+      await tasks.insertOne({ username: req.session.username, task, priority, created })
     }
 
-    const rows = await tasks.find({}).toArray()
+    const rows = await tasks.find({username: req.session.username}).toArray()
     res.json( rows.map( addDerivedFields ) )
   })
 
-  app.put( '/data', async function( req, res ) {
+  app.put( '/data', requireAuth, async function( req, res ) {
     const update = {}
     if( req.body.task !== undefined ) update.task = String( req.body.task ).trim()
     if( req.body.priority !== undefined ) update.priority = req.body.priority
     if( req.body.created !== undefined ) update.created = req.body.created
 
     if( req.body.id ) {
-      await tasks.updateOne( { _id: new ObjectId( req.body.id ) }, { $set: update } )
+      await tasks.updateOne( 
+        { _id: new ObjectId( req.body.id ), username: req.session.username },
+        { $set: update } )
     }
 
-    const rows = await tasks.find({}).toArray()
+    const rows = await tasks.find({username: req.session.username}).toArray()
     res.json( rows.map( addDerivedFields ) )
   })
 
-  app.delete( '/data', async function( req, res ) {
+  app.delete( '/data', requireAuth, async function( req, res ) {
     if( req.body.id ) {
-      await tasks.deleteOne({ _id: new ObjectId( req.body.id ) })
+      await tasks.deleteOne({ _id: new ObjectId( req.body.id ), username: req.session.username })
     }
 
-    const rows = await tasks.find({}).toArray()
+    const rows = await tasks.find({username: req.session.username}).toArray()
     res.json( rows.map( addDerivedFields ) )
   })
 

@@ -46,6 +46,11 @@ const escapeHTML = function( str ) {
 
 const loadData = async function() {
   const response = await fetch( '/data' )
+  if (response.status === 401) {
+    alert('You are not logged in. Please log in to access your tasks.')
+    window.location.href = '/'
+    return
+  }
   const data = await response.json()
   renderRows( data )
   return data
@@ -96,6 +101,12 @@ const handleSubmit = async function( event ) {
     })
   }
 
+  if (response.status === 401) {
+    alert('You are not logged in. Please log in to add or edit tasks.')
+    window.location.href = '/'
+    return
+  }
+
   const data = await response.json()
   renderRows( data )
   resetForm()
@@ -112,6 +123,11 @@ const handleTableClick = async function( event ) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     })
+    if (response.status === 401) {
+      alert('You are not logged in. Please log in to delete tasks.')
+      window.location.href = '/'
+      return
+    }
     const data = await response.json()
     renderRows( data )
     if( editingId === id ) resetForm()
