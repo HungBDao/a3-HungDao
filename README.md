@@ -1,3 +1,6 @@
+bachung2005_db_user
+avo7n4hdYLnGT9lW
+mongodb+srv://bachung2005_db_user:avo7n4hdYLnGT9lW@hungdaocluster.kkw1vyn.mongodb.net/?appName=HungDaoCluster
 Assignment 3 - Persistence: Two-tier Web Application with Database, Express server, and CSS template
 ===
 
