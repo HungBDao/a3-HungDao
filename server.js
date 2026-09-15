@@ -1,16 +1,13 @@
+require('dotenv').config()
+const { MongoClient, ObjectId } = require('mongodb')
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI
+
 const express = require('express')
 const port = 3000
 
 const app = express()
 app.use(express.json())
 app.use(express.static('public'))
-
-let nextId = 4
-const appdata = [
-  { id: 1, task: 'Finish assignment 2', priority: 'high', created: '2026-09-05' },
-  { id: 2, task: 'Read chapter 4', priority: 'medium', created: '2026-09-05' },
-  { id: 3, task: 'Water the plants', priority: 'low', created: '2026-09-05' }
-]
 
 // Define the number of days until the deadline for each priority level
 const PRIORITY_DEADLINE_DAYS = {
@@ -26,9 +23,13 @@ const addDerivedFields = function(row) {
   const deadlineDate = new Date(createdDate);
   deadlineDate.setDate(createdDate.getDate() + deadlineDays);
   
-  return Object.assign( {}, row, {
-    deadline: deadlineDate.toISOString().slice( 0, 10 ) // Format as YYYY-MM-DD
-  })
+  return {
+    id: row._id.toString(),
+    task: row.task,
+    priority: row.priority,
+    created: row.created,
+    deadline: deadlineDate.toISOString().slice(0, 10)
+  }
 }
 
 // Function to return the appdata with derived fields added
@@ -36,54 +37,70 @@ const withDerivedData = function() {
   return appdata.map( addDerivedFields )
 }
 
-app.get('/data', (req, res) => {
-  res.json(withDerivedData())
-})
-
-app.post('/data', (req, res) => {
-  const newRow = {
-    id: nextId++,
-    task: String(req.body.task || '').trim(),
-    priority: ['low', 'medium', 'high'].includes(req.body.priority) ? req.body.priority : 'medium',
-    created: req.body.created || new Date().toISOString().slice(0, 10)
-  }
-
-  if (newRow.task.length > 0) {
-    appdata.push(newRow)
-  }
-
-  res.json(withDerivedData())
-})
-
-app.put('/data', (req, res) => {
-  const id = parseInt(req.body.id, 10)
-  const row = appdata.find(r => r.id === id)
-
-  if (row) {
-    if (req.body.task !== undefined) row.task = String(req.body.task).trim()
-    if (req.body.priority !== undefined) row.priority = req.body.priority
-    if (req.body.created !== undefined) row.created = req.body.created
-  }
-
-  res.json(withDerivedData())
-})
-
-app.delete('/data', (req, res) => {
-  const id = parseInt(req.body.id, 10)
-  const index = appdata.findIndex(r => r.id === id)
-
-  if (index !== -1) {
-    appdata.splice(index, 1)
-  }
-
-  res.json(withDerivedData())
-})
-
-app.listen(process.env.PORT || port, () => {
-  console.log(`Server is running on port ${port}`)
-})
-
 const sendJSON = function( response, data ) {
   response.writeHead( 200, "OK", {'Content-Type': 'application/json' })
   response.end( JSON.stringify( data ) )
 }
+
+const main = async function() {
+  if (!MONGO_URI) {
+    throw new Error('Missing MongoDB connection string. Set MONGO_URI or MONGODB_URI in your .env file.')
+  }
+
+  const client = new MongoClient(MONGO_URI)
+  await client.connect()
+  console.log('Connected to MongoDB')
+
+  const db = client.db('a3tasktracker')
+  const tasks = db.collection('tasks')
+
+  app.get('/data', async function (req, res) {
+    const rows = await tasks.find({}).toArray()
+    res.json(rows.map(addDerivedFields))
+  })
+
+  app.post('/data', async function (req, res) {
+    const task = String( req.body.task || '' ).trim()
+    const priority = [ 'low', 'medium', 'high' ].includes( req.body.priority ) ? req.body.priority : 'medium'
+    const created = req.body.created || new Date().toISOString().slice( 0, 10 )
+
+    if( task.length > 0 ) {
+      await tasks.insertOne({ task, priority, created })
+    }
+
+    const rows = await tasks.find({}).toArray()
+    res.json( rows.map( addDerivedFields ) )
+  })
+
+  app.put( '/data', async function( req, res ) {
+    const update = {}
+    if( req.body.task !== undefined ) update.task = String( req.body.task ).trim()
+    if( req.body.priority !== undefined ) update.priority = req.body.priority
+    if( req.body.created !== undefined ) update.created = req.body.created
+
+    if( req.body.id ) {
+      await tasks.updateOne( { _id: new ObjectId( req.body.id ) }, { $set: update } )
+    }
+
+    const rows = await tasks.find({}).toArray()
+    res.json( rows.map( addDerivedFields ) )
+  })
+
+  app.delete( '/data', async function( req, res ) {
+    if( req.body.id ) {
+      await tasks.deleteOne({ _id: new ObjectId( req.body.id ) })
+    }
+
+    const rows = await tasks.find({}).toArray()
+    res.json( rows.map( addDerivedFields ) )
+  })
+
+  app.listen(process.env.PORT || port, () => {
+    console.log(`Server is running on port ${port}`)
+  })
+}
+
+main().catch(err => {
+  console.error('Error starting the server:', err)
+  process.exit(1)
+})

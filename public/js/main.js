@@ -61,8 +61,8 @@ const resetForm = function() {
   elm( '#cancel-edit-btn' ).classList.add( 'hidden' )
 }
 
-const startEdit = function( row ) {
-  editingId = row.id
+const startEdit = function( row, target ) {
+  editingId = target.dataset.id
   elm( '#task' ).value = row.task
   elm( '#priority' ).value = row.priority
   elm( '#created' ).value = row.created
@@ -103,7 +103,7 @@ const handleSubmit = async function( event ) {
 
 const handleTableClick = async function( event ) {
   const target = event.target
-  const id = parseInt( target.dataset.id, 10 )
+  const id = target.dataset.id
   if( !id ) return
 
   if( target.classList.contains( 'delete-btn' ) ) {
@@ -120,7 +120,7 @@ const handleTableClick = async function( event ) {
   if( target.classList.contains( 'edit-btn' ) ) {
     const data = await loadData()
     const row = data.find( r => r.id === id )
-    if( row ) startEdit( row )
+    if( row ) startEdit( row, target )
   }
 }
 
