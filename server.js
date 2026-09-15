@@ -9,6 +9,15 @@ const app = express()
 app.use(express.json())
 app.use(express.static('public'))
 
+const session = require('express-session')
+const bcrypt = require('bcryptjs')
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'default_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
+}))
+
 // Define the number of days until the deadline for each priority level
 const PRIORITY_DEADLINE_DAYS = {
   'high': 1,
@@ -53,10 +62,42 @@ const main = async function() {
 
   const db = client.db('a3tasktracker')
   const tasks = db.collection('tasks')
+  const users = db.collection('users')
 
   app.get('/data', async function (req, res) {
     const rows = await tasks.find({}).toArray()
     res.json(rows.map(addDerivedFields))
+  })
+
+  //Debug 
+  app.get( '/whoami', function( req, res ) {
+    res.json({ username: ( req.session && req.session.username ) || null })
+  })
+
+  app.post('/login', async function (req, res) {
+    const username = String( req.body.username || '' ).trim()
+    const password = String( req.body.password || '' )
+
+    if( !username || !password ) {
+      return res.status( 400 ).json({ error: 'Username and password are required.' })
+    }
+
+    const existingUser = await users.findOne({ username })
+    
+    if (!existingUser) {
+      const hashedPassword = await bcrypt.hash(password, 10)
+      await users.insertOne({ username, password: hashedPassword })
+      req.session.username = username
+      return res.json({ ok: true, created: true })
+    }
+
+    const match = await bcrypt.compare( password, existingUser.password )
+    if( !match ) {
+      return res.status( 401 ).json({ error: 'Incorrect password.' })
+    }
+
+    req.session.username = username
+    res.json({ ok: true, created: false })
   })
 
   app.post('/data', async function (req, res) {
