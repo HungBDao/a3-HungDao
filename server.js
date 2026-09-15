@@ -7,7 +7,7 @@ const port = 3000
 
 const app = express()
 app.use(express.json())
-app.use(express.static('public'))
+app.use(express.static('public', {index: 'false'}))
 
 const session = require('express-session')
 const bcrypt = require('bcryptjs')
@@ -17,6 +17,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }))
+
+const path = require('path')
 
 // Define the number of days until the deadline for each priority level
 const PRIORITY_DEADLINE_DAYS = {
@@ -63,6 +65,16 @@ const main = async function() {
   const db = client.db('a3tasktracker')
   const tasks = db.collection('tasks')
   const users = db.collection('users')
+
+  app.get( '/', function( req, res ) {
+    if( req.session && req.session.username ) return res.redirect( '/app' )
+    res.sendFile( path.join( __dirname, 'public', 'index.html' ) )
+  })
+
+  app.get( '/app', function( req, res ) {
+    if( !req.session || !req.session.username ) return res.redirect( '/' )
+    res.sendFile( path.join( __dirname, 'public', 'app.html' ) )
+  })
 
   app.get('/data', async function (req, res) {
     const rows = await tasks.find({}).toArray()

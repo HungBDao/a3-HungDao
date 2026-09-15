@@ -1,68 +1,22 @@
 <!doctype html>
 <html lang='en'>
   <head>
-    <title>Task Deadline Tracker</title>
+    <title>Log In</title>
     <meta charset='utf-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1' />
-    <link rel='preconnect' href='https://fonts.googleapis.com' />
-    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap' rel='stylesheet' />
-    <script src='js/main.js'></script>
     <link rel='stylesheet' href='css/main.css' />
-    
-    <!-- get rid of favicon error -->
-    <link rel='icon' href='data:;base64,iVBORw0KGgo=' />
+    <script src='js/login.js' defer></script>
   </head>
-  
   <body>
-    <header id='page-header'>
-      <h1>Task Deadline Tracker</h1>
-      <p class='subtitle'>Add a task and a priority, and the server figures out your deadline for you.</p>
-    </header>
+    <form id='login-form'>
+      <label for='username'>Username</label>
+      <input type='text' id='username' required />
 
-    <main class='layout'>
-      <section id='entry-section' class='card'>
-        <h2>Enter a task</h2>
-        <form id='task-form'>
-          <label for='task'>Task</label>
-          <input type='text' id='task' name='task' placeholder='e.g. Finish reading assignment' required />
+      <label for='password'>Password</label>
+      <input type='password' id='password' required />
 
-          <label for='priority'>Priority</label>
-          <select id='priority' name='priority'>
-            <option value='low'>Low</option>
-            <option value='medium' selected>Medium</option>
-            <option value='high'>High</option>
-          </select>
+      <div id='login-error'></div>
 
-          <label for='created'>Created Date</label>
-          <input type='date' id='created' name='created' required />
-
-          <button type='submit' id='submit-btn'>Add Task</button>
-          <button type='button' id='cancel-edit-btn' class='secondary hidden'>Cancel Edit</button>
-        </form>
-      </section>
-
-      <section id='results-section' class='card'>
-        <h2>Task List</h2>
-        <table id='results-table'>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Priority</th>
-              <th>Created</th>
-              <th>Deadline</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id='results-body'>
-            <!-- populated by main.js -->
-          </tbody>
-        </table>
-        <p id='no-tasks-msg' class='hidden'>No tasks yet. Add one above!</p>
-      </section>
-    </main>
-    
-    <footer>
-      <p>CS4241 Assignment 3. Hung Dao</p>
-    </footer>
+      <button type='submit'>Log In / Sign Up</button>
+    </form>
   </body>
 </html>
