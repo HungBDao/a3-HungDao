@@ -20,6 +20,11 @@ app.use(session({
 
 const path = require('path')
 
+const helmet = require('helmet')
+const morgan = require('morgan')
+app.use(helmet({ contentSecurityPolicy: false }))
+app.use(morgan('dev'))
+
 // Define the number of days until the deadline for each priority level
 const PRIORITY_DEADLINE_DAYS = {
   'high': 1,
