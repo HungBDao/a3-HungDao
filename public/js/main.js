@@ -140,10 +140,16 @@ const handleTableClick = async function( event ) {
   }
 }
 
+const handleLogout = async function() {
+  await fetch( '/logout', { method: 'POST' })
+  window.location.href = '/'
+}
+
 window.onload = function() {
   elm( '#created' ).valueAsDate = new Date()
   elm( '#task-form' ).addEventListener( 'submit', handleSubmit )
   elm( '#results-body' ).addEventListener( 'click', handleTableClick )
   elm( '#cancel-edit-btn' ).addEventListener( 'click', resetForm )
+  elm( '#logout-btn' ).addEventListener( 'click', handleLogout )
   loadData()
 }

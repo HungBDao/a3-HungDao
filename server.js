@@ -81,16 +81,6 @@ const main = async function() {
     res.sendFile( path.join( __dirname, 'public', 'app.html' ) )
   })
 
-  app.get('/data', requireAuth, async function (req, res) {
-    const rows = await tasks.find({username: req.session.username}).toArray()
-    res.json(rows.map(addDerivedFields))
-  })
-
-  //Debug 
-  app.get( '/whoami', function( req, res ) {
-    res.json({ username: ( req.session && req.session.username ) || null })
-  })
-
   app.post('/login', async function (req, res) {
     const username = String( req.body.username || '' ).trim()
     const password = String( req.body.password || '' )
@@ -115,6 +105,23 @@ const main = async function() {
 
     req.session.username = username
     res.json({ ok: true, created: false })
+  })
+
+  app.post( '/logout', function( req, res ) {
+    req.session.destroy( function() {
+      res.json({ ok: true })
+    })
+  })
+
+  //Debug 
+  app.get( '/whoami', function( req, res ) {
+    res.json({ username: ( req.session && req.session.username ) || null })
+  })
+
+
+  app.get('/data', requireAuth, async function (req, res) {
+    const rows = await tasks.find({username: req.session.username}).toArray()
+    res.json(rows.map(addDerivedFields))
   })
 
   app.post('/data', requireAuth, async function (req, res) {
